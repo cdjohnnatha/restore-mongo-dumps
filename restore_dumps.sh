@@ -21,7 +21,7 @@ loading_bar() {
 
 unzipDumps() {
     #Get all files tar.gz and extract at same directory.
-    totalTarGz=$(ls | wc -l)
+    totalTarGz=$(find -name '*.tar.gz' | wc -l)
     processCount=0
     for f in *.tar.gz; do
         loading_bar $processCount $totalTarGz "Extracting dumps from all tar.gz from $(pwd)"
@@ -29,16 +29,21 @@ unzipDumps() {
         directory=$(echo "$f" | sed 's/\.[^.]*\.[^.]*$//')
         mkdir $(echo "$directory");
         tar -xf "$f" -C "./$(echo $directory)/";
+        sleep 5s
     done
 }
 
 restoreDumps() {
     #Access all directories and run mongorestore
+    totalTarGz=$(find -name '*.tar.gz' | wc -l)
+    totalFiles=$(ls | wc -l)
+    directoriesCount=$(($totalFiles-$totalTarGz-1));
     processCount=0
     for d in ./*/ ; do
-        loading_bar $processCount $totalTarGz 'Mongo Restoring'
+        loading_bar $processCount $directoriesCount 'Mongo Restoring'
         (cd "$d" && mongorestore ./dump);
         processCount=$(($processCount + 1))
+        sleep 5s
     done
 }
 
